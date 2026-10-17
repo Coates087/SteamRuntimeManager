@@ -1,0 +1,57 @@
+body {
+  background-color: rgb(211, 214, 215);
+}
+
+h1 {
+  color: black;
+  text-align: center;
+}
+
+p {
+  font-family: verdana;
+  font-size: 20px;
+}
+
+button:hover {
+    cursor: pointer;
+}
+
+.main-side {
+  display: table-cell;
+  width: 46%;
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+.main-body {
+    width: 100%; 
+    display: table;
+}
+.versionCon {
+   float: right;
+}
+.versionText {
+   padding-right: 4px;
+   padding-top: 4px;
+}
+
+.versionText2{
+   display: block;
+}
+.invisible-el {
+  visibility: hidden !important;
+  display: none !important;
+}
+
+.dlBar {
+   width: 400px;
+   height: 30px;
+}
+.vert-spacer {
+   padding-top: 4px;
+}
+
+button {
+    width: 150px;
+    height: 24px;
+}
