@@ -118,6 +118,30 @@ ipcMain.handle('message-save-dial', async (event, filePath) => {
   return result;
 });
 
+ipcMain.handle('message-load-dial', async (event, filePath) => {
+  //https://www.electronjs.org/docs/latest/api/dialog#dialogshowmessageboxsyncwindow-options
+
+  var strMessage = `Would you like to select the following file to prep for installation?\n\n${filePath}`;
+
+  var result = false;
+
+  var dialogOptions = {
+    title: "Steam Runtime Load File",
+    message: strMessage,
+    buttons: ["Yes","No"],
+    type: "info",
+  };
+
+  var messageResult = dialog.showMessageBoxSync(dialogOptions);
+
+  // if result = 0, then open the directory
+  if (messageResult == 0){
+    result = true;
+  }
+  
+  return result;
+});
+
 ipcMain.handle('get-installed-runtime', async (event, dirPath) => {
   var result = await checkInstalledRuntimeFolders(dirPath)
   return result;
@@ -126,8 +150,6 @@ ipcMain.handle('get-installed-runtime', async (event, dirPath) => {
 ipcMain.handle('get-installed-runtime-version', async (event, strFilePath, compressed) => {
   var versionNum = '0';
   var result = await checkVersionsFile(strFilePath);
-
-  console.log(result);
 
   var txtVer = parseVersionsFile(result);
 

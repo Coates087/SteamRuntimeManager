@@ -38,6 +38,10 @@ button:hover {
 .versionText2{
    display: block;
 }
+
+.psuedo-label{
+   font-weight: bold;
+}
 .invisible-el {
   visibility: hidden !important;
   display: none !important;

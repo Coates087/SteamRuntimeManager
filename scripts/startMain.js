@@ -65,6 +65,9 @@ var $versionMessage = $("#versionMessage");
 var $updateVersionMessage = $("#updateVersionMessage");
 var $statusMessage = $("#statusMessage");
 
+var $fileSelected = $("#fileSelected");
+var $filePath = $("#filePath");
+
 var $downloadBtn = $("#downloadBtn");
 var $checkBtn = $("#checkBtn");
 var $loadRunTimeFileBtn = $("#loadRunTimeFileBtn");
@@ -209,11 +212,34 @@ window.electronAPI.onComplete(async (path) => {
   enableInputs();
   console.log('Download finished at:', path);
 
+  var strTempFile = "";
 
   if (!["",undefined].includes(path)){
-    $statusMessage.html(`Downloading finished: ${tarFilePath}`);
+    strTempFile = tarFilePath;
+    $statusMessage.html(`Downloading finished: ${strTempFile}`);
 
-    await window.electronAPI.messageSaveDial(tarFilePath);
+    var fileResults = await window.electronAPI.messageLoadDial(strTempFile);
+
+    if (fileResults == true){
+
+      var fileParts = [];
+      var strFileName = "";
+      var strFilePath = "";
+      fileParts = strTempFile.split("/");
+
+      strFileName = fileParts[fileParts.length - 1];
+
+      strFilePath = tarFstrTempFileilePath.substring(0, strTempFile.lastIndexOf("/") + 1);
+      
+      $fileSelected.html(strFileName);
+      $filePath.html(strFilePath);
+    }
+    else {
+      tarFilePath = "";
+    }
+
+    await window.electronAPI.messageSaveDial(strTempFile);
+
   }
 });
 

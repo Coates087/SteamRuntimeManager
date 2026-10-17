@@ -7,6 +7,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     readFile: (filePath) => ipcRenderer.invoke('read-file', filePath),
     saveFileDial: (strFilePath) => ipcRenderer.invoke('save-file-dial', strFilePath),
     messageSaveDial: (strFilePath) => ipcRenderer.invoke('message-save-dial', strFilePath),
+    messageLoadDial: (strFilePath) => ipcRenderer.invoke('message-load-dial', strFilePath),
     checkRuntime: () => ipcRenderer.send('check-runtime-major-version'),
     downloadRuntime: (strFilePath, targetPath) => ipcRenderer.send('download-runtime', strFilePath, targetPath),
     getHomeDIR: () => ipcRenderer.invoke('get-home-dir'),
