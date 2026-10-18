@@ -8,6 +8,7 @@ const fileUrl = 'https://steampowered.com';
 let divMain = $('#mainWin');
 let divFileProgressBar = $('#fileProgressBar');
 var localVersion = '';
+var localMajorVersion = '';
 var tarFilePath = "";
 
 ( async () => {
@@ -76,17 +77,23 @@ var $checkBtn = $("#checkBtn");
 var $loadRunTimeFileBtn = $("#loadRunTimeFileBtn");
 var $installRunTimeFileBtn = $("#installRunTimeFileBtn");
 
+var $openRunTimeFileBtn = $("#openRunTimeFileBtn")
+
 function disableInputs(){
+  console.log("Disabling Buttons");
   $downloadBtn.prop("disabled",true);
   $checkBtn.prop("disabled",true);
   $loadRunTimeFileBtn.prop("disabled",true);
   $installRunTimeFileBtn.prop("disabled",true);
+  $openRunTimeFileBtn.prop("disabled",true);
 }
 function enableInputs(){
+  console.log("Enabling Buttons");
   $downloadBtn.prop("disabled",false);
   $checkBtn.prop("disabled",false);
   $loadRunTimeFileBtn.prop("disabled",false);
   $installRunTimeFileBtn.prop("disabled",false);
+  $openRunTimeFileBtn.prop("disabled",false);
 }
 
 
@@ -108,10 +115,17 @@ checkBtn.addEventListener('click', () => {
 
 let installRunTimeFileBtn = document.getElementById('installRunTimeFileBtn');
 
-installRunTimeFileBtn.addEventListener('click', () => {
+installRunTimeFileBtn.addEventListener('click', async () => {
+  
+  
+  await installSteamRuntime();
+});
+
+let openRunTimeFileBtn = document.getElementById('openRunTimeFileBtn');
+
+openRunTimeFileBtn.addEventListener('click', async () => {
   disableInputs();
-  resetProgressBar();
-  alert("Add Function");
+  openSelectedFile();
   enableInputs();
 });
 
@@ -129,6 +143,44 @@ function resetProgressBar() {
   divFileProgressBar.val(0);
 }
 
+function openSelectedFile() {
+
+  if(["", undefined].includes(tarFilePath)){
+    //tarFilePath
+    var errMessgae = "No file loaded.\nUse the Load Runtime File button to prep the runtime installation."
+
+    alert(errMessgae);
+  }
+  else{
+    window.electronAPI.messageSaveDial(tarFilePath, true);
+  }
+}
+
+async function installSteamRuntime(){
+  resetProgressBar();
+
+  if(["", undefined].includes(tarFilePath)){
+    //tarFilePath
+    var errMessgae = "No file loaded.\nUse the Load Runtime File button to prep the runtime installation."
+
+    alert(errMessgae);
+  }
+  else{
+    console.log("Input Path: " + tarFilePath);
+
+    disableInputs();
+    setTimeout( async()=>{
+      await window.electronAPI.installRuntime(tarFilePath, localMajorVersion);
+    },125)
+  }
+}
+
+window.electronAPI.onInstallComplete(async (strFileText) => {
+
+  console.log("Install Complete:");
+  console.log(strFileText);
+  enableInputs();
+})
 
 async function downloadSteamRun(){
   //console.log(__dirname);
@@ -246,6 +298,14 @@ async function loadTarFileFrontEnd(){
     $fileSelected.html(fileDetails.fileName);
     $filePath.html(fileDetails.fileDir);
 
+    localVersion = fileDetails.versionNo;
+
+    var verNum1 = fileDetails.versionNo.split(".")[0];
+
+    // setting major version version
+    localMajorVersion = verNum1;
+    
+
     tarFilePath = `${fileDetails.fileDir}${fileDetails.fileName}`;
   }
   else{
@@ -274,16 +334,25 @@ window.electronAPI.onComplete(async (path) => {
     if (fileResults == true){
       loadFileToApp(strTempFile);
 
+
+      var strVersionNum = $versionMessage.html();
+      var verNum1 = strVersionNum.split(".")[0];
+      // setting major version version
+      localVersion = strVersionNum;
+
+      localMajorVersion = verNum1;
       // load version number here:
-      $fileVersion.html($versionMessage.html());
+      $fileVersion.html(strVersionNum);
       $fileVersionDiv.removeClass("invisible-el");
     }
     else {
       $fileVersionDiv.addClass("invisible-el");
       tarFilePath = "";
+      localVersion = "";
+      localMajorVersion = "";
     }
 
-    await window.electronAPI.messageSaveDial(strTempFile);
+    await window.electronAPI.messageSaveDial(strTempFile, false);
 
   }
 });

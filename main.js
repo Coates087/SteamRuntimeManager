@@ -10,6 +10,7 @@ const zlib = require('zlib');
 const https = require('https');
 
 const tempPath = path.join(__dirname,".temp");
+const cachePath = path.join(getUserHomeDir(),".cache","steam-runtime-manager");
 const outputSteamRunFile = path.join(tempPath, 'SteamLinuxRuntime_4.tar.xz');
 const fileUrl = "https://repo.steampowered.com/steamrt4/images/4.0.20260914.260627/SteamLinuxRuntime_4.tar.xz" //'https://steampowered.com';
 
@@ -20,6 +21,7 @@ const strLatestPubBeta = "images/latest-public-beta/";
 const strSteamRunTime = "SteamLinuxRuntime_{@}.tar.xz";
 var numCurrentSteamRunVersion = numDefaultCurrentSteamRunVersion;
 const strDefaultCurrentSteamRunVersion = "steamrt4";
+const strDefaultSteamRunFolderName = "steamrt";
 var strCurrentSteamRunVersion = `{strDefaultCurrentSteamRunVersion}{numDefaultCurrentSteamRunVersion}`;
 const updateTxtURL = "images/latest-public-beta.txt";
 
@@ -74,7 +76,7 @@ ipcMain.handle('save-file-dial', async (event, strFilePath)=>{
     title: "Save Steam Runtime file",
     defaultPath: finalDefaultPath,
     filters: [
-      { name: 'Tar file', extensions: ['xz'] },
+      { name: 'Tar file | (*.xz)', extensions: ['xz'] },
     ]
   };
 
@@ -97,7 +99,7 @@ ipcMain.on('check-runtime-major-version', async (event)=>{
   
 });
 
-ipcMain.handle('message-save-dial', async (event, filePath) => {
+ipcMain.handle('message-save-dial', async (event, filePath, openFile = false) => {
   //https://www.electronjs.org/docs/latest/api/dialog#dialogshowmessageboxsyncwindow-options
 
 
@@ -108,10 +110,14 @@ ipcMain.handle('message-save-dial', async (event, filePath) => {
     type: "info",
   };
 
-  var result = dialog.showMessageBoxSync(dialogOptions);
+  var result = -1; 
+  
+  if (openFile === false){
+    result = dialog.showMessageBoxSync(dialogOptions);
+  }
 
   // if result = 0, then open the directory
-  if (result == 0){
+  if (result == 0 || openFile == true){
     var fileDir = path.dirname(filePath);
     shell.showItemInFolder(filePath);
   }
@@ -167,6 +173,13 @@ ipcMain.handle('get-home-dir', () => {
   return result;
 });
 
+
+ipcMain.handle('install-runtime', async (event, strInputPath, strVersion) => {
+  var result = await unzipTarFile(event, strInputPath, strVersion);
+
+  return result;
+});
+
 ipcMain.handle('dial-load-file', async (event) => {
 
   var fileParts = [];
@@ -178,7 +191,7 @@ ipcMain.handle('dial-load-file', async (event) => {
     title: "Open Steam Runtime file",
     defaultPath: downloadsPath,
     filters: [
-      { name: 'Tar file', extensions: ['xz'] },
+      { name: 'Tar file | (*.xz)', extensions: ['xz'] },
     ],
     properties: ['openFile']
   };
@@ -354,6 +367,118 @@ function checkNewestSteamRuntimeVersionNumber(strURL, majorVersion){
 }
 
 
+async function unzipTarFile(event, strTarFile, strVersion){
+  // See the link below:
+  // https://stackoverflow.com/a/32916564
+  // tempPath
+
+  var fileDir = path.dirname(strTarFile) + "/";
+  var fileNameOnly = path.basename(strTarFile);
+  var fileToFind = 'VERSIONS.txt';
+  var fileFound = false;
+  var fileDetails = {fileName: "", fileDir: "", versionNo: ""};
+  var outputPath = `${tempPath}/${strSteamRun}${strVersion}`;
+
+  var outputPathFinal = `${cachePath}/${strSteamRun}${strVersion}`; // for the final version
+
+  console.log("Runtime Output:");
+  console.log(`${outputPath}`);
+
+  var tempPathExists = fs.existsSync(outputPath); //fs.existsSync(tempPath);
+  if(tempPathExists){
+    // Delete the folder
+    fs.rmSync(outputPath + "/", { recursive: true, force: true });
+  }
+  fs.mkdirSync(outputPath, { recursive: true }); //{ recursive: true }
+
+
+  var result = new Promise((resolve, reject) => {
+
+    var extract = tar.extract();
+    var fileData = '';
+    var downloadedBytes = 0;
+    var totalArchiveBytes = 0;
+
+    // loop through for each file entry inside the tar file
+    extract.on('entry', (header, stream, cb) => {
+      
+      // Construct the proper file path for the extracted item
+      const targetFilePath = path.join(outputPath, header.name);
+
+      // If the entry is a directory, create it and complete the callback
+      if (header.type === 'directory') {
+          fs.mkdirSync(targetFilePath, { recursive: true });
+          stream.resume();
+          return cb();
+      }
+
+      // Ensure parent directories exist for nested files
+      fs.mkdirSync(path.dirname(targetFilePath), { recursive: true });
+
+
+      //const outputStream = fs.createWriteStream(outputPath);
+      const outputStream = fs.createWriteStream(targetFilePath);
+
+      const totalBytes = parseInt(header.size, 10) || 0;
+      var fileBytesWritten = 0;
+      stream.on('data', (chunk)=>{
+        downloadedBytes += chunk.length;
+        if (totalBytes > 0) {
+            const progress = (fileBytesWritten / totalBytes) * 100;
+            event.sender.send('download-progress', { progress, fileBytesWritten, totalBytes });
+        }
+        // const progress = (downloadedBytes / totalBytes) * 100;
+        // event.sender.send('download-progress', { progress, downloadedBytes, totalBytes }); // I'll need to update this action's name
+      })
+
+      stream.pipe(outputStream);
+
+      outputStream.on('finish', () => {
+        cb();
+      });
+      outputStream.on('error', (err) => {
+        console.log(err)
+        cb(err);
+      });
+      // // Skip other files by resuming and immediately calling the callback
+      // stream.on('end', () => {
+      //   cb();
+      // });
+
+
+      stream.on('error', (err) => {
+          console.error('Stream error:', err);
+          cb(err);
+      });
+      
+      stream.resume();
+      
+    });
+
+    extract.on('finish', () => {
+        resolve(outputPath);
+        event.sender.send('install-runtime-complete', outputPath);
+    });
+
+    extract.on('error', (err) => {
+      console.log("Error Reading compressed file:")
+      console.log(err);
+      reject(err);
+    });
+
+    // Pipe the .tar.xz file read stream through the LZMA decompressor, then into tar-stream
+    fs.createReadStream(strTarFile)
+      .pipe(lzma.createDecompressor())
+      .on('error', reject)
+      .pipe(extract);
+
+  });
+
+
+  // event.sender.send('install-runtime-complete', outputPath);
+}
+
+
 async function checkTarFile(event, strTarFile){
   // See the link below:
   // https://stackoverflow.com/a/32916564
@@ -423,8 +548,6 @@ async function checkTarFile(event, strTarFile){
       .pipe(lzma.createDecompressor())
       .on('error', reject)
       .pipe(extract);
-
-    // strTarFile
 
   });
 
