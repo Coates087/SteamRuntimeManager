@@ -68,6 +68,9 @@ var $statusMessage = $("#statusMessage");
 var $fileSelected = $("#fileSelected");
 var $filePath = $("#filePath");
 
+var $fileVersionDiv = $("#fileVersionDiv");
+var $fileVersion = $("#fileVersion");
+
 var $downloadBtn = $("#downloadBtn");
 var $checkBtn = $("#checkBtn");
 var $loadRunTimeFileBtn = $("#loadRunTimeFileBtn");
@@ -100,6 +103,23 @@ let checkBtn = document.getElementById('checkBtn');
 
 checkBtn.addEventListener('click', () => {
   checkSteamRun();
+});
+
+let installRunTimeFileBtn = document.getElementById('installRunTimeFileBtn');
+
+installRunTimeFileBtn.addEventListener('click', () => {
+  disableInputs();
+  alert("Add Function");
+  enableInputs();
+});
+
+
+let loadRunTimeFileBtn = document.getElementById('loadRunTimeFileBtn');
+
+loadRunTimeFileBtn.addEventListener('click', async () => {
+  disableInputs();
+  await loadTarFileFrontEnd();
+  enableInputs();
 });
 
 async function downloadSteamRun(){
@@ -203,6 +223,29 @@ async function checkVersion(strFilePath, compressed = false){
 }
 
 
+async function loadTarFileFrontEnd(){
+  //var strFileText = "";
+  var fileDetails = {fileName: "", fileDir: "", versionNo: ""};
+  fileDetails = await window.electronAPI.dialLoadFile();
+
+  console.log('Load File');
+  console.log(fileDetails);
+
+  if (!["",undefined].includes(fileDetails.versionNo)){
+    $fileVersionDiv.removeClass("invisible-el");
+
+    $fileVersion.html(fileDetails.versionNo);
+    $fileSelected.html(fileDetails.fileName);
+    $filePath.html(fileDetails.fileDir);
+
+    tarFilePath = `${fileDetails.fileDir}${fileDetails.fileName}`;
+  }
+  else{
+    $fileVersionDiv.addClass("invisible-el");
+    tarFilePath = "";
+  }
+}
+
 window.electronAPI.onProgress((data) => {
   divFileProgressBar.val(data.progress.toFixed(0))
   console.log(`Downloaded ${data.downloadedBytes} of ${data.totalBytes} (${data.progress.toFixed(2)}%)`);
@@ -221,18 +264,7 @@ window.electronAPI.onComplete(async (path) => {
     var fileResults = await window.electronAPI.messageLoadDial(strTempFile);
 
     if (fileResults == true){
-
-      var fileParts = [];
-      var strFileName = "";
-      var strFilePath = "";
-      fileParts = strTempFile.split("/");
-
-      strFileName = fileParts[fileParts.length - 1];
-
-      strFilePath = tarFstrTempFileilePath.substring(0, strTempFile.lastIndexOf("/") + 1);
-      
-      $fileSelected.html(strFileName);
-      $filePath.html(strFilePath);
+      loadFileToApp(strTempFile);
     }
     else {
       tarFilePath = "";
@@ -242,6 +274,32 @@ window.electronAPI.onComplete(async (path) => {
 
   }
 });
+
+
+window.electronAPI.onDecompressComplete(async (strFileText) => {
+
+  // if (!["",undefined].includes(strFileText)){
+  //   $fileVersionDiv.addClass("invisible-el")
+  //   $fileVersion.html(strFileText);
+  // }
+  // else{
+  //   $fileVersionDiv.removeClass("invisible-el")
+  // }
+});
+
+async function loadFileToApp(strTempFile){
+    var fileParts = [];
+    var strFileName = "";
+    var strFilePath = "";
+    fileParts = strTempFile.split("/");
+
+    strFileName = fileParts[fileParts.length - 1];
+
+    strFilePath = strTempFile.substring(0, strTempFile.lastIndexOf("/") + 1);
+    
+    $fileSelected.html(strFileName);
+    $filePath.html(strFilePath);
+}
 
 window.electronAPI.onError((err) => {
   enableInputs();

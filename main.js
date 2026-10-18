@@ -4,6 +4,7 @@ const { app, BrowserWindow, ipcMain, ipcRenderer, dialog, shell } = require('ele
 const path = require('path');
 const fs = require('fs');
 const tar = require('tar-stream');
+const lzma = require('lzma-native');
 const zlib = require('zlib');
 
 const https = require('https');
@@ -166,6 +167,35 @@ ipcMain.handle('get-home-dir', () => {
   return result;
 });
 
+ipcMain.handle('dial-load-file', async (event) => {
+
+  var fileParts = [];
+  var defaultFileName = "";
+  var downloadsPath = `${getUserHomeDir()}/Downloads/`;
+  var finalDefaultPath = "";
+
+  var dialogOptions = {
+    title: "Open Steam Runtime file",
+    defaultPath: downloadsPath,
+    filters: [
+      { name: 'Tar file', extensions: ['xz'] },
+    ],
+    properties: ['openFile']
+  };
+
+  var versionText = "";
+
+  var result = await dialog.showOpenDialog(dialogOptions);
+
+  if (result.canceled == false){
+    //console.log(result.filePaths);
+    var thisFilePath = result.filePaths[0];
+    versionText = await checkTarFile(event, thisFilePath);
+  }
+  
+  return versionText;
+});
+
 async function checkVersionsFile(strFilePath){
   var strContent = "";
   return fs.promises.readFile(strFilePath, 'utf-8', (err, data) => {
@@ -323,21 +353,72 @@ function checkNewestSteamRuntimeVersionNumber(strURL, majorVersion){
   return versionPromise;
 }
 
-function checkTarFile(){
+
+async function checkTarFile(event, strTarFile){
   // See the link below:
   // https://stackoverflow.com/a/32916564
 
-  /*
+  var fileDir = path.dirname(strTarFile) + "/";
+  var fileNameOnly = path.basename(strTarFile);
+  var fileToFind = 'VERSIONS.txt';
+  var fileFound = false;
+  var fileDetails = {fileName: "", fileDir: "", versionNo: ""};
 
-  First, extract tar file, then read the VERSIONS.txt file.
+  fileDetails.fileName = fileNameOnly;
+  fileDetails.fileDir = fileDir;
 
-  See here for reading text file by line:
-  https://stackoverflow.com/a/23332116
+  return new Promise((resolve, reject) => {
+
+    var extract = tar.extract();
+    var fileData = '';
+
+    // loop through for each file entry inside the tar file
+    extract.on('entry', (header, stream, cb) => {
+      // Check if this is the file we are looking for
+      if (header.name.endsWith(`/${fileToFind}`)) {
+        fileFound = true;
+        stream.on('data', (chunk) => {
+          fileData += chunk;
+        });
+        stream.on('end', () => {
+          cb();
+        });
+      } else {
+        // Skip other files by resuming and immediately calling the callback
+        stream.on('end', () => {
+          cb();
+        });
+        stream.resume();
+      }
+    });
+
+    extract.on('finish', () => {
+      if (fileFound) {
+        var versionText = parseVersionsFile(fileData)
+        fileDetails.versionNo = versionText;
+        resolve(fileDetails);
+      } else {
+        reject(new Error(`File ${fileToFind} not found in archive.`));
+      }
+    });
+
+    extract.on('error', (err) => {
+      console.log("Error Reading compressed file:")
+      console.log(err);
+      reject(err);
+    });
+
+    // Pipe the .tar.xz file read stream through the LZMA decompressor, then into tar-stream
+    fs.createReadStream(strTarFile)
+      .pipe(lzma.createDecompressor())
+      .on('error', reject)
+      .pipe(extract);
+
+    // strTarFile
+
+  });
 
 
-  See here for reading text file by tab:
-  https://stackoverflow.com/a/29976895
-  */
 }
 
 
@@ -368,8 +449,6 @@ function downloadSteamRun(event, strFilePath, targetPath){
       //fs.mkdirSync(tempPath, { recursive: true });
       fs.mkdirSync(fileDir, { recursive: true });
     }
-
-    //event.sender.send('start-download', {fileUrl, outputSteamRunFile})
 
     //const fileStream = fs.createWriteStream(outputSteamRunFile);
     const fileStream = fs.createWriteStream(targetPath, { highWaterMark: 4 * 1024 * 1024 });
