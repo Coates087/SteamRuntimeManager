@@ -95,6 +95,7 @@ let downloadBtn = document.getElementById('downloadBtn');
 downloadBtn.addEventListener('click', () => {
   // Here you would add the logic to download the Steam runtime
 
+  resetProgressBar();
   // newestSteamRunTimeURL
   downloadSteamRun();
 });
@@ -109,6 +110,7 @@ let installRunTimeFileBtn = document.getElementById('installRunTimeFileBtn');
 
 installRunTimeFileBtn.addEventListener('click', () => {
   disableInputs();
+  resetProgressBar();
   alert("Add Function");
   enableInputs();
 });
@@ -118,9 +120,15 @@ let loadRunTimeFileBtn = document.getElementById('loadRunTimeFileBtn');
 
 loadRunTimeFileBtn.addEventListener('click', async () => {
   disableInputs();
+  resetProgressBar();
   await loadTarFileFrontEnd();
   enableInputs();
 });
+
+function resetProgressBar() {
+  divFileProgressBar.val(0);
+}
+
 
 async function downloadSteamRun(){
   //console.log(__dirname);
@@ -159,7 +167,7 @@ window.electronAPI.onCheckComplete(async (dataResult) => {
     downloadVersion = dataResult.versionString.toString();
   }
   console.log('Public Release: ', downloadVersion);
-  $versionMessage.html("V. available: " + downloadVersion);
+  $versionMessage.html(downloadVersion);
 
   newestSteamRunTimeURL = dataResult.downloadURL;
 
@@ -265,8 +273,13 @@ window.electronAPI.onComplete(async (path) => {
 
     if (fileResults == true){
       loadFileToApp(strTempFile);
+
+      // load version number here:
+      $fileVersion.html($versionMessage.html());
+      $fileVersionDiv.removeClass("invisible-el");
     }
     else {
+      $fileVersionDiv.addClass("invisible-el");
       tarFilePath = "";
     }
 
@@ -278,13 +291,6 @@ window.electronAPI.onComplete(async (path) => {
 
 window.electronAPI.onDecompressComplete(async (strFileText) => {
 
-  // if (!["",undefined].includes(strFileText)){
-  //   $fileVersionDiv.addClass("invisible-el")
-  //   $fileVersion.html(strFileText);
-  // }
-  // else{
-  //   $fileVersionDiv.removeClass("invisible-el")
-  // }
 });
 
 async function loadFileToApp(strTempFile){

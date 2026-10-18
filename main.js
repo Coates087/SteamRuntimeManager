@@ -371,14 +371,24 @@ async function checkTarFile(event, strTarFile){
 
     var extract = tar.extract();
     var fileData = '';
+    var downloadedBytes = 0;
 
     // loop through for each file entry inside the tar file
     extract.on('entry', (header, stream, cb) => {
       // Check if this is the file we are looking for
       if (header.name.endsWith(`/${fileToFind}`)) {
         fileFound = true;
+
+        // for getting the total size of the file
+        const totalBytes = parseInt(header.size, 10);
+
         stream.on('data', (chunk) => {
           fileData += chunk;
+          
+          downloadedBytes += chunk.length;
+          const progress = (downloadedBytes / totalBytes) * 100;
+          // Send progress to renderer
+          event.sender.send('download-progress', { progress, downloadedBytes, totalBytes }); // I'll need to update this action's name
         });
         stream.on('end', () => {
           cb();
@@ -518,24 +528,3 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit()
 });
 
-
-
-    
-    //const fileStream = fs.createWriteStream(outputSteamRunFile);
-
-    // https.get(fileUrl, (response) => {
-    //     if (response.statusCode === 200) {
-    //         response.pipe(fileStream);
-    //         fileStream.on('finish', () => {
-    //         fileStream.close();
-    //         console.log('Download completed successfully.');
-    //         });
-    //     } else {
-    //         console.error(`Failed to download. Status code: ${response.statusCode}`);
-    //         fs.unlink(outputPath, () => {});
-    //     }
-    //     })
-    //     .on('error', (err) => {
-    //         fs.unlink(outputSteamRunFile, () => {});
-    //         console.error(`Error: ${err.message}`);
-    // });
