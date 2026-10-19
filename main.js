@@ -11,6 +11,7 @@ const https = require('https');
 
 const tempPath = path.join(__dirname,".temp");
 const cachePath = path.join(getUserHomeDir(),".cache","steam-runtime-manager");
+const umuPath = path.join(getUserHomeDir(),".local/share/umu");
 const outputSteamRunFile = path.join(tempPath, 'SteamLinuxRuntime_4.tar.xz');
 const fileUrl = "https://repo.steampowered.com/steamrt4/images/4.0.20260914.260627/SteamLinuxRuntime_4.tar.xz" //'https://steampowered.com';
 
@@ -175,11 +176,25 @@ ipcMain.handle('get-home-dir', () => {
 
 
 ipcMain.handle('install-runtime', async (event, strInputPath, strVersion) => {
+  // need to create the temp path first
+  var umuPathExists = fs.existsSync(umuPath); //fs.existsSync(tempPath);
+  if(!umuPathExists){
+    //fs.mkdirSync(tempPath, { recursive: true });
+    fs.mkdirSync(umuPath, { recursive: true });
+  }
+
+  // needed for creating the umu-shim shell script file
+  var umuSpecial = path.join(umuPath,"umu-shim");
+  var umuSpecialPathExists = fs.existsSync(umuSpecial);
+
+  if(!umuSpecialPathExists){
+    var dataForUmuShFile = retrieveUmuSpecialSHFile();
+    fs.writeFileSync(umuSpecial, dataForUmuShFile);
+  }
+
   var result = await unzipTarFile(event, strInputPath, strVersion);
 
-  // return result;
-
-  var testPath = "/home/loco/Documents/ProgramingProjects/steam-runtime-manager/.temp/steamrt4/SteamLinuxRuntime_4";
+  //var testPath = "/home/loco/Documents/ProgramingProjects/steam-runtime-manager/.temp/steamrt4/SteamLinuxRuntime_4";
 
   var symlinkFile = path.join(result,"umu"); //testPath + "/umu"
 
@@ -388,9 +403,11 @@ async function unzipTarFile(event, strTarFile, strVersion){
   var fileToFind = 'VERSIONS.txt';
   var fileFound = false;
   var fileDetails = {fileName: "", fileDir: "", versionNo: ""};
-  var outputPath = `${tempPath}/${strSteamRun}${strVersion}`;
+  var outputPathFinal = `${tempPath}/${strSteamRun}${strVersion}`;
 
-  var outputPathFinal = `${cachePath}/${strSteamRun}${strVersion}`; // for the final version
+  //var outputPath = `${cachePath}/${strSteamRun}${strVersion}`; // for the final version
+
+  var outputPath = path.join(umuPath,`${strSteamRun}${strVersion}`); // for the final version
 
   var loggerBashCode = 'case "${0##*/}" in\n';
 
@@ -521,8 +538,6 @@ async function unzipTarFile(event, strTarFile, strVersion){
       })
 
       stream.pipe(outputStream);
-      //Add the line below for the file "pressure-vessel-arm64/libexec/steam-runtime-tools-0/logger-0.bash"
-      // #!/bin/bash
 
       outputStream.on('finish', () => {
         cb();
@@ -703,34 +718,24 @@ function downloadSteamRun(event, strFilePath, targetPath){
     
 }
 
-// /home/loco/.local/share/umu/
+function retrieveUmuSpecialSHFile(){
+  var textData = "#!/bin/sh\n\n";
 
-// ipcMain.on('start-download', (event, { fileUrl, outputPath }) => {
-//   const fileStream = fs.createWriteStream(outputPath);
+  textData = `${textData}` + 'if [ "${XDG_CURRENT_DESKTOP}" = "gamescope" ] || [ "${XDG_SESSION_DESKTOP}" = "gamescope" ]; then\n';
+  textData = `${textData}` + '    # Check if STEAM_MULTIPLE_XWAYLANDS is set to 1\n';
+  textData = `${textData}` + '    if [ "${STEAM_MULTIPLE_XWAYLANDS}" = "1" ]; then\n';
+  textData = `${textData}        # Check if DISPLAY is set, if not, set it to ":1"\n`;
+  textData = `${textData}`+ '        if [ -z "${DISPLAY}" ]; then\n'; 
+  textData = `${textData}            export DISPLAY=":1"\n`; 
+  textData = `${textData}        fi\n`; 
+  textData = `${textData}    fi\n`; 
+  textData = `${textData}fi\n`; 
+  textData = `${textData}\n`; 
+  textData = `${textData}# Execute the passed command\n`; 
+  textData = `${textData}` + 'exec "$@"\n'; 
 
-//   https.get(fileUrl, (response) => {
-//     const totalBytes = parseInt(response.headers['content-length'], 10);
-//     let downloadedBytes = 0;
-
-//     response.on('data', (chunk) => {
-//       downloadedBytes += chunk.length;
-//       const progress = (downloadedBytes / totalBytes) * 100;
-
-//       // Send progress to renderer
-//       event.sender.send('download-progress', { progress, downloadedBytes, totalBytes });
-//     });
-
-//     response.pipe(fileStream);
-
-//     fileStream.on('finish', () => {
-//       fileStream.close();
-//       event.sender.send('download-complete', outputPath);
-//     });
-//   }).on('error', (err) => {
-//     fs.unlink(outputPath, () => {}); // Delete partial file on error
-//     event.sender.send('download-error', err.message);
-//   });
-// });
+  return textData;
+}
 
 
 app.whenReady().then(() => {
