@@ -113,17 +113,19 @@ button {
 .modal-content {
   background-color: #fefefe;
   margin: auto;
-  padding: 20px;
+  padding-bottom: 20px;
   border: 1px solid #888;
   width: 80%;
 }
 
 /* The Close Button */
 .close {
-  color: #aaaaaa;
-  float: right;
-  font-size: 28px;
+  color: #ffffff;;
+  /* float: right; */
+  font-size: 35px;
   font-weight: bold;
+  position: absolute;
+  left: 88%;
 }
 
 .close:hover,
@@ -131,4 +133,30 @@ button {
   color: #000;
   text-decoration: none;
   cursor: pointer;
+}
+
+.modalBanner {
+  background-color: #959ddd;
+  padding-bottom: 10px;
+  display: block;
+}
+
+.modalBanner-title {
+  top: 4px;
+  left: 50%;
+  position: relative;
+  font-size: large;
+  font-weight: bold;
+  font-family: system-ui;
+}
+
+.modal-close-button {
+  position: relative;
+  left: 50%;
+  width: 90px !important;
+}
+
+.modal-content-text {
+  padding-left: 20px;
+  padding-right: 20px;
 }

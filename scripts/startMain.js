@@ -130,6 +130,12 @@ modalSpan.addEventListener('click', () => {
   closeModal();
 });
 
+let closeModalBtn = document.getElementById("closeModalBtn");
+
+closeModalBtn.addEventListener('click', () => {
+  closeModal();
+});
+
 let downloadBtn = document.getElementById('downloadBtn');
 
 downloadBtn.addEventListener('click', () => {
