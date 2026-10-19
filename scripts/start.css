@@ -16,6 +16,11 @@ button:hover {
     cursor: pointer;
 }
 
+select {
+  width: 260px;
+  height: 22px;
+}
+
 .main-side {
   display: table-cell;
   width: 46%;

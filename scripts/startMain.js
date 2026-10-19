@@ -12,6 +12,8 @@ var localVersion = '';
 var localMajorVersion = '';
 var tarFilePath = "";
 
+var allRuntimeVersions = [];
+
 ( async () => {
   // let content = document.getElementById('content').innerText;
 
@@ -94,6 +96,9 @@ var $specialModal = $("#specialModal");
 
 var $specialModalText = $("#specialModalText");
 var $modalTitle = $("#modal-title");
+
+var $cboMajoSRT = $("#cboMajoSRT");
+var $cboMajoSRTOptions = $("#cboMajoSRT option");
 
 function disableInputs(){
   console.log("Disabling Buttons");
@@ -187,6 +192,12 @@ loadRunTimeFileBtn.addEventListener('click', async () => {
   enableInputs();
 });
 
+let cboMajoSRT = document.getElementById("cboMajoSRT");
+
+cboMajoSRT.addEventListener('change', (e) => {
+  setSelectedRuntimeValue();
+});
+
 
 let exitBtn = document.getElementById("exitBtn");
 
@@ -194,6 +205,7 @@ exitBtn.addEventListener('click', (e) => {
   e.preventDefault()
   window.electronAPI.onCloseApp();
 });
+
 
 function resetProgressBar() {
   divFileProgressBar.val(0);
@@ -231,7 +243,7 @@ async function installSteamRuntime(){
     disableInputs();
     // since we can't count the number of files in the compressed tar file, we have to go with a loading wheel to let the user know that...
     //...the files are being extracted
-    showLoadingWheel(); 
+    showLoadingWheel();
 
     await window.electronAPI.installRuntime(tarFilePath, localMajorVersion);
   }
@@ -293,23 +305,39 @@ async function getUmuPath(){
   return umuPath;
 }
 
-window.electronAPI.onCheckComplete(async (dataResult) => {
+window.electronAPI.onCheckComplete(async (dataResults) => {
   enableInputs();
   var downloadVersion = "";
-  if (dataResult.available == true){
-    downloadVersion = dataResult.versionString.toString();
+  var filteredDataResults = dataResults.filter(t=> t.available == true);
+
+  // we really want to store this array globally
+  allRuntimeVersions = [];
+  
+  allRuntimeVersions.push(...filteredDataResults);
+
+  var firstVal = "";
+
+  if (filteredDataResults.length > 0){
+    var aDataResult = dataResults[dataResults.length - 1];
+    firstVal = `${aDataResult.majorVersion.toString()}@${aDataResult.downloadURL}`;
+
+    downloadVersion = aDataResult.versionString.toString();
+
+    console.log('Public Release: ', downloadVersion);
+    $versionMessage.html(downloadVersion);
+
+    newestSteamRunTimeURL = aDataResult.downloadURL;
+
+    console.log(`URL: ${newestSteamRunTimeURL}`);
+
+    populateRuntimeDropdown(dataResults, firstVal);
+
     $connectionMessage.addClass("invisible-el");
   }
   else{
     $connectionMessage.removeClass("invisible-el");
   }
 
-  console.log('Public Release: ', downloadVersion);
-  $versionMessage.html(downloadVersion);
-
-  newestSteamRunTimeURL = dataResult.downloadURL;
-
-  console.log(`URL: ${newestSteamRunTimeURL}`);
 
   var numDownloadVersion = formatPsuedoVersionAsNum(downloadVersion);
   var numLocalVersion = formatPsuedoVersionAsNum(localVersion);
@@ -329,6 +357,63 @@ window.electronAPI.onCheckComplete(async (dataResult) => {
   }
 
 });
+
+function populateRuntimeDropdown(runtimeResults, defaultVal = ''){
+  $cboMajoSRTOptions.remove(); 
+  // $cboMajoSRT.
+
+  var firstVal = ""
+  for (var i = 0; i < runtimeResults.length; i++){
+    var aRuntimeResult = runtimeResults[i];
+    var optionHTML =  `<option value="${aRuntimeResult.majorVersion.toString()}@${aRuntimeResult.downloadURL}">Runtime V ${aRuntimeResult.majorVersion.toString()} (${aRuntimeResult.versionString})</option>`;
+    $cboMajoSRT.append(optionHTML);
+
+    if (i == 0){
+      firstVal = `${aRuntimeResult.majorVersion.toString()}@${aRuntimeResult.downloadURL}`;
+    }
+  }
+
+  if (defaultVal == ""){
+    $cboMajoSRT.val(firstVal);
+  }
+  else {
+    $cboMajoSRT.val(defaultVal);
+  }
+}
+
+function getSelectRuntimeFromArray() {
+  var selectedRaw = $cboMajoSRT.val();
+
+  var result = {    "majorVersion": 0,
+    "available": true,
+    "versionString": "",
+    "url": "",
+    "downloadURL": "",
+    "errorStr": ""};
+
+  var results = allRuntimeVersions.filter(t=> `${t.majorVersion.toString()}@${t.downloadURL}` == selectedRaw);
+
+  if (results.length > 0){
+    result = results[0];
+  }
+
+  return result;
+}
+
+function setSelectedRuntimeValue() {
+  var selectedRaw = $cboMajoSRT.val();
+
+  var selectedResult = getSelectRuntimeFromArray(selectedRaw);
+
+  var selectedValue = "";
+
+  selectedValue = selectedResult.downloadURL
+  //selectedValue = selectedRaw.split("@")[1];
+
+  newestSteamRunTimeURL = selectedValue;
+
+  console.log(`Selected Runtime: ${newestSteamRunTimeURL}`);
+}
 
 function formatPsuedoVersionAsNum(strVersion){
 
@@ -402,7 +487,7 @@ async function loadTarFileFrontEnd(){
 
 window.electronAPI.onProgress((data) => {
   divFileProgressBar.val(data.progress.toFixed(0))
-  console.log(`Downloaded ${data.downloadedBytes} of ${data.totalBytes} (${data.progress.toFixed(2)}%)`);
+  // console.log(`Downloaded ${data.downloadedBytes} of ${data.totalBytes} (${data.progress.toFixed(2)}%)`);
 });
 
 window.electronAPI.onComplete(async (path) => {
@@ -420,9 +505,16 @@ window.electronAPI.onComplete(async (path) => {
     if (fileResults == true){
       loadFileToApp(strTempFile);
 
+      
+      var selectedRaw = $cboMajoSRT.val();
 
-      var strVersionNum = $versionMessage.html();
-      var verNum1 = strVersionNum.split(".")[0];
+      var selectedRun = getSelectRuntimeFromArray(selectedRaw)
+
+      var selectedValue = "";
+
+      var strVersionNum = selectedRun.versionString; //selectedRaw.split("@")[1];
+      var verNum1 = selectedRun.majorVersion; //selectedRaw.split("@")[0];
+
       // setting major version version
       localVersion = strVersionNum;
 

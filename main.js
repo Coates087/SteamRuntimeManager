@@ -337,23 +337,29 @@ async function checkForNewestRuntimeMajorVersion(event){ //
   var nextVersion = numCurrentSteamRunVersion + 1
 
   var finalResults = {};
+  var finalResultsArray = [];
 
-  var results = await checkRuntimeMajorVersion(nextVersion);
+  var maxNum = 10;
 
-  if (results.available == true){
-    finalResults = results;
-    //finalResults.majorVersionNumber = nextVersion;
+  for (var i = 1; i < 10; i++){
+    var aResult = await checkRuntimeMajorVersion(i);
+    if (aResult.available == true){
+      finalResultsArray.push(aResult);
+    }
+    else{
+      break;
+    }
   }
-  else {
-    finalResults = await checkRuntimeMajorVersion(validVersion);
-  }
+  // var strJson = JSON.stringify(finalResultsArray);
+
+  // console.log(strJson);
 
   if (event != undefined){
-    //finalResults.majorVersionNumber = numCurrentSteamRunVersion;
-    event.sender.send('check-complete', finalResults);
+    event.sender.send('check-complete', finalResultsArray);
   }
 
-  return finalResults;
+  return finalResultsArray;
+  //return finalResults;
 }
 
 async function checkRuntimeMajorVersion(versionNumber){
@@ -376,6 +382,9 @@ function checkNewestSteamRuntimeVersionNumber(strURL, majorVersion){
 
   if (majorVersion == 3){
     strFinalVerName = "sniper";
+  }
+  if (majorVersion == 2){
+    strFinalVerName = "scout";
   }
 
   var strReplaceAtSymbol = strSteamRunTime.replaceAll("{@}",strFinalVerName);
