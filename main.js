@@ -157,13 +157,21 @@ ipcMain.handle('get-installed-runtime', async (event, dirPath) => {
 
 ipcMain.handle('get-installed-runtime-version', async (event, strFilePath, compressed) => {
   var versionNum = '0';
-  var result = await checkVersionsFile(strFilePath);
+  var result = ""; 
 
-  var txtVer = parseVersionsFile(result);
+  var versionPathExists = fs.existsSync(strFilePath);
 
-  var psuedoVerNum = txtVer.replaceAll(".","")
-  if (!isNaN(psuedoVerNum)){
-    versionNum = txtVer
+  if (versionPathExists){
+    result = await checkVersionsFile(strFilePath);
+
+    var txtVer = ""
+    txtVer = parseVersionsFile(result);
+
+    var psuedoVerNum = txtVer.replaceAll(".","")
+    if (!isNaN(psuedoVerNum)){
+      versionNum = txtVer
+    }
+
   }
   return versionNum;
 });
@@ -261,6 +269,12 @@ async function checkInstalledRuntimeFolders(dirPath){
   }
 
   try{
+
+    var umuPathExists = fs.existsSync(umuPath); //fs.existsSync(tempPath);
+    if(!umuPathExists){
+      fs.mkdirSync(umuPath, { recursive: true });
+    }
+
     var entries = await fs.promises.readdir(finalDirPath, { withFileTypes: true });
     // Filter for directories that start with "steamrt" (case-insensitive)
     var steamFolders2 = entries
@@ -493,26 +507,6 @@ async function unzipTarFile(event, strTarFile, strVersion){
 
       var foundLoggerBashFile = false;
 
-      // Need to intercept the "logger-0.bash" to support games not launched by Steam --Code is from Google Gemini
-      if (header.name.endsWith('logger-0.bash')) {
-          foundLoggerBashFile = true;
-
-          let scriptContent = '';
-          stream.on('data', (chunk) => {
-              scriptContent += chunk;
-          });
-          stream.on('end', () => {
-              // Apply your custom patches or modifications here
-              scriptContent = scriptContent.replace('# shellcheck shell=bash', '#!/usr/bin/env bash');
-
-              scriptContent = scriptContent.replace("# SPDX-License-Identifier: MIT", "# SPDX-License-Identifier: MIT\n\n" + loggerBashCode);
-              
-              fs.writeFileSync(targetFilePath, scriptContent);
-              fs.chmodSync(targetFilePath, '755'); // Make executable
-              cb();
-          });
-      }
-
       if (foundLoggerBashFile == true){
         return cb();
       }
@@ -522,7 +516,9 @@ async function unzipTarFile(event, strTarFile, strVersion){
 
 
       //const outputStream = fs.createWriteStream(outputPath);
-      const outputStream = fs.createWriteStream(targetFilePath);
+      const outputStream = fs.createWriteStream(targetFilePath, { 
+        mode: header.mode // Preserves executable/read/write bits from the tarball
+      });
 
       const totalBytes = parseInt(header.size, 10) || 0;
       var fileBytesWritten = 0;
@@ -666,14 +662,17 @@ function parseVersionsFile(strFileText){
   var allText = "";
   var text = ""
   allText = strFileText;
-  try {
-    var lineArray = allText.split("\n");
-    var tabText = lineArray[1]; //"depot	4.0.20261007.263973			# Overall version number";
-    var tabArray = tabText.split("\t");
-    text = tabArray[1];
-  }
-  catch (err) {
-    console.error(`Couldn't parse data: \n${err}`)
+
+  if(!["",undefined].includes(allText)) {
+    try {
+      var lineArray = allText.split("\n");
+      var tabText = lineArray[1]; //"depot	4.0.20261007.263973			# Overall version number";
+      var tabArray = tabText.split("\t");
+      text = tabArray[1];
+    }
+    catch (err) {
+      console.error(`Couldn't parse data: \n${err}`)
+    }
   }
 
   return text;

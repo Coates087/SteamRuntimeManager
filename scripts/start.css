@@ -24,15 +24,20 @@ button:hover {
 }
 
 .main-body {
-    width: 100%; 
-    display: table;
+  width: 100%; 
+  display: table;
 }
 .versionCon {
-   float: right;
+  float: right;
 }
 .versionText {
-   padding-right: 4px;
-   padding-top: 4px;
+  padding-right: 4px;
+  padding-top: 4px;
+}
+
+.connection-text {
+  color:red;
+  font-size: large;
 }
 
 .versionText2{

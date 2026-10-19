@@ -49,7 +49,13 @@ $(async function(){
   console.log(`UMU Dir: ${resultPath}`);
 
   // check version installed locally
-  var versionFilePath = `${umuStr}${resultPath}/VERSIONS.txt`
+  var versionFilePath = `${umuStr}${resultPath}`;
+
+  if (!versionFilePath.endsWith("/")){
+    versionFilePath = versionFilePath + "/";
+  }
+
+  versionFilePath = versionFilePath + "VERSIONS.txt";
 
   localVersion = '0';
   //VERSIONS.txt
@@ -65,6 +71,7 @@ var newestSteamRunTimeURL = "";
 
 var $versionMessage = $("#versionMessage");
 var $updateVersionMessage = $("#updateVersionMessage");
+var $connectionMessage = $("#connectionMessage");
 var $statusMessage = $("#statusMessage");
 
 var $fileSelected = $("#fileSelected");
@@ -85,7 +92,8 @@ var $loaderDiv = $("#loaderDiv");
 
 var $specialModal = $("#specialModal");
 
-var $specialModalText = $("#specialModalText")
+var $specialModalText = $("#specialModalText");
+var $modalTitle = $("#modal-title");
 
 function disableInputs(){
   console.log("Disabling Buttons");
@@ -197,9 +205,7 @@ function openSelectedFile() {
     //tarFilePath
     var errMessgae = "No file loaded.\nUse the Load Runtime File button to prep the runtime installation."
 
-    //alert(errMessgae);
-
-    $specialModalText.html(errMessgae);
+    setSpecialModalMessage(errMessgae, "Error");
     openModal();
   }
   else{
@@ -214,9 +220,8 @@ async function installSteamRuntime(){
     //tarFilePath
     var errMessgae = "No file loaded.\nUse the Load Runtime File button to prep the runtime installation."
 
-    //alert(errMessgae);
-    
-    $specialModalText.html(errMessgae);
+
+    setSpecialModalMessage(errMessgae, "Error");
     openModal();
 
   }
@@ -228,9 +233,7 @@ async function installSteamRuntime(){
     //...the files are being extracted
     showLoadingWheel(); 
 
-    setTimeout( async()=>{
-      await window.electronAPI.installRuntime(tarFilePath, localMajorVersion);
-    },125)
+    await window.electronAPI.installRuntime(tarFilePath, localMajorVersion);
   }
 }
 
@@ -241,25 +244,40 @@ window.electronAPI.onInstallComplete(async (strFileText) => {
   hideLoadingWheel();
   enableInputs();
 
-  var successMessage = "Steam Runtime files installed successfully."
-  $specialModalText.html(successMessage);
+  var successMessage = "Steam Runtime files installed successfully.";
+  setSpecialModalMessage(successMessage);
   openModal();
   
 })
 
+function setSpecialModalMessage(strMessage, strTitle = "Message"){
+  $specialModalText.html(strMessage);
+  $modalTitle.html(strTitle);
+}
+
 async function downloadSteamRun(){
   //console.log(__dirname);
 
-  var saveResult = await window.electronAPI.saveFileDial(newestSteamRunTimeURL);
+  var errMessgae = 'Cannot connect to Steam Runtime Repo.\nCheck your connection and use the "Check Latest Runtime" button to find the latest Runtime tarball file';
 
-  console.log(saveResult)
-  if (saveResult.canceled == false){
-    tarFilePath = saveResult.filePath
-    disableInputs();
-
-    $statusMessage.html(`Downloading file: ${tarFilePath}`);
-    await window.electronAPI.downloadRuntime(newestSteamRunTimeURL, tarFilePath);
+  if (["", undefined].includes(newestSteamRunTimeURL)){
+    setSpecialModalMessage(errMessgae, "Error");
+    openModal();
   }
+  else{
+    var saveResult = await window.electronAPI.saveFileDial(newestSteamRunTimeURL);
+
+    console.log(saveResult)
+    if (saveResult.canceled == false){
+      tarFilePath = saveResult.filePath
+      disableInputs();
+
+      $statusMessage.html(`Downloading file: ${tarFilePath}`);
+      await window.electronAPI.downloadRuntime(newestSteamRunTimeURL, tarFilePath);
+    }
+
+  }
+
 
 }
 
@@ -280,7 +298,12 @@ window.electronAPI.onCheckComplete(async (dataResult) => {
   var downloadVersion = "";
   if (dataResult.available == true){
     downloadVersion = dataResult.versionString.toString();
+    $connectionMessage.addClass("invisible-el");
   }
+  else{
+    $connectionMessage.removeClass("invisible-el");
+  }
+
   console.log('Public Release: ', downloadVersion);
   $versionMessage.html(downloadVersion);
 
