@@ -12,6 +12,7 @@
   "publisher": "Coates0087",
   "license": "MIT",
   "devDependencies": {
+    "@electron-forge/cli": "^8.0.1",
     "electron": "^44.4.5",
     "license-checker": "^25.0.1"
   },

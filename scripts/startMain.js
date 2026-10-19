@@ -4,7 +4,8 @@ const fileUrl = 'https://steampowered.com';
 // reference this video from Zac of All Tech:
 // https://www.youtube.com/watch?v=8eLNA2-8fs0
 
-//let divMain2 = document.getElementById('mainWin');
+// Check here for packaging this program as an AppImage:
+// https://www.electronjs.org/docs/latest/tutorial/tutorial-packaging
 let divMain = $('#mainWin');
 let divFileProgressBar = $('#fileProgressBar');
 var localVersion = '';
