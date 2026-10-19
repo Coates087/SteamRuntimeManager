@@ -190,6 +190,7 @@ ipcMain.handle('install-runtime', async (event, strInputPath, strVersion) => {
   if(!umuSpecialPathExists){
     var dataForUmuShFile = retrieveUmuSpecialSHFile();
     fs.writeFileSync(umuSpecial, dataForUmuShFile);
+    fs.chmodSync(umuSpecial, '755'); // Make executable
   }
 
   var result = await unzipTarFile(event, strInputPath, strVersion);
