@@ -177,7 +177,18 @@ ipcMain.handle('get-home-dir', () => {
 ipcMain.handle('install-runtime', async (event, strInputPath, strVersion) => {
   var result = await unzipTarFile(event, strInputPath, strVersion);
 
-  return result;
+  // return result;
+
+  var testPath = "/home/loco/Documents/ProgramingProjects/steam-runtime-manager/.temp/steamrt4/SteamLinuxRuntime_4";
+
+  var symlinkFile = path.join(result,"umu"); //testPath + "/umu"
+
+  var _v2_file = "_v2-entry-point";
+  
+  createSymLink(symlinkFile, _v2_file)
+
+  event.sender.send('install-runtime-complete', result);
+  //event.sender.send('install-runtime-complete', testPath);
 });
 
 ipcMain.handle('dial-load-file', async (event) => {
@@ -261,22 +272,22 @@ async function checkInstalledRuntimeFolders(dirPath){
 
 // needed for creating the umu link file
 async function createSymLink(linkPath, targetPath, linkType = "file"){
-  if(["", undefined].inlclude(linkPath)){
+  if(["", undefined].includes(linkPath)){
     console.error("Link Path cannot be empty");
     return;
   }
-  if(["", undefined].inlclude(targetPath)){
+  if(["", undefined].includes(targetPath)){
     console.error("Target Path cannot be empty");
     return;
   }
 
-  if(!["file", "dir"].inlclude(linkType)){
+  if(!["file", "dir"].includes(linkType)){
     console.error(`Link Type must be "file" or "dir"`);
     return;
   }
 
   try {
-    await fs.promises.symlink(targetPath, linkPath);
+    await fs.promises.symlink(targetPath, linkPath, linkType);
     console.log(`Link path created for target ${targetPath}`)
   }
   catch (err){
@@ -381,6 +392,15 @@ async function unzipTarFile(event, strTarFile, strVersion){
 
   var outputPathFinal = `${cachePath}/${strSteamRun}${strVersion}`; // for the final version
 
+  var loggerBashCode = 'case "${0##*/}" in\n';
+
+  loggerBashCode = loggerBashCode + '    (logger-0.bash | srt-logger-0.bash)\n';
+  loggerBashCode = loggerBashCode + '        echo "srt-logger-0.bash should be sourced, not executed" >&2\n';
+  loggerBashCode = loggerBashCode + '        echo "Usage: . $0 [SRT-LOGGER OPTIONS]" >&2\n';
+  loggerBashCode = loggerBashCode + '        exit 1\n';
+  loggerBashCode = loggerBashCode + 'esac\n';
+  //loggerBashCode = loggerBashCode + '\n';
+
   console.log("Runtime Output:");
   console.log(`${outputPath}`);
 
@@ -392,25 +412,91 @@ async function unzipTarFile(event, strTarFile, strVersion){
   fs.mkdirSync(outputPath, { recursive: true }); //{ recursive: true }
 
 
-  var result = new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => {
 
     var extract = tar.extract();
     var fileData = '';
     var downloadedBytes = 0;
     var totalArchiveBytes = 0;
 
+    var strReplaceFolder = "";
+    var index = 0;
     // loop through for each file entry inside the tar file
-    extract.on('entry', (header, stream, cb) => {
-      
+    extract.on('entry', async (header, stream, cb) => {
+      index ++;
+
+      if (index === 1){
+        strReplaceFolder = `${header.name}`;
+      }
+
+      // // We want to remove the parent folder inside the "steamrt" folder
+      var headerName = header.name.replace(strReplaceFolder,"");
+
+      // if (headerName.endsWith("bin/srt-logger-0.bash"){
+      //   console.log(header.type);
+      //   console.log(JSON.stringify(header));
+      // }
+
       // Construct the proper file path for the extracted item
-      const targetFilePath = path.join(outputPath, header.name);
-      // console.log(`unpacking file: ${header.name}`);
+      const targetFilePath = path.join(outputPath, headerName);
+
+
+      if (index !== 1){
+        console.log(`unpacking file: ${headerName}`);
+      }
 
       // If the entry is a directory, create it and complete the callback
-      if (header.type === 'directory') {
+      if (header.type === 'directory' && index !== 1) {
           fs.mkdirSync(targetFilePath, { recursive: true });
+
+          if(["pressure-vessel-arm64/bin/", "pressure-vessel/bin/"].includes(headerName)){
+            var specialLink = "../libexec/steam-runtime-tools-0/logger-0.bash";
+            var symlinkFile = path.join(targetFilePath, "srt-logger-0.bash");
+
+            await createSymLink(symlinkFile, specialLink, "file");
+          }
+          // # shellcheck shell=bash
+
           stream.resume();
           return cb();
+      }
+
+      if (header.type === 'directory' && index === 1) {
+          stream.resume();
+          return cb();
+      }
+
+      // this is for handling symlinks
+      if (header.type === 'symlink') {
+          await createSymLink(targetFilePath, header.linkname, "file");
+          stream.resume();
+          return cb();
+      }
+
+      var foundLoggerBashFile = false;
+
+      // Need to intercept the "logger-0.bash" to support games not launched by Steam --Code is from Google Gemini
+      if (header.name.endsWith('logger-0.bash')) {
+          foundLoggerBashFile = true;
+
+          let scriptContent = '';
+          stream.on('data', (chunk) => {
+              scriptContent += chunk;
+          });
+          stream.on('end', () => {
+              // Apply your custom patches or modifications here
+              scriptContent = scriptContent.replace('# shellcheck shell=bash', '#!/usr/bin/env bash');
+
+              scriptContent = scriptContent.replace("# SPDX-License-Identifier: MIT", "# SPDX-License-Identifier: MIT\n\n" + loggerBashCode);
+              
+              fs.writeFileSync(targetFilePath, scriptContent);
+              fs.chmodSync(targetFilePath, '755'); // Make executable
+              cb();
+          });
+      }
+
+      if (foundLoggerBashFile == true){
+        return cb();
       }
 
       // Ensure parent directories exist for nested files
@@ -432,11 +518,11 @@ async function unzipTarFile(event, strTarFile, strVersion){
 
             // event.sender.send('download-progress', { progress, fileBytesWritten, totalBytes });
         }
-        // const progress = (downloadedBytes / totalBytes) * 100;
-        // event.sender.send('download-progress', { progress, downloadedBytes, totalBytes }); // I'll need to update this action's name
       })
 
       stream.pipe(outputStream);
+      //Add the line below for the file "pressure-vessel-arm64/libexec/steam-runtime-tools-0/logger-0.bash"
+      // #!/bin/bash
 
       outputStream.on('finish', () => {
         cb();
@@ -462,7 +548,7 @@ async function unzipTarFile(event, strTarFile, strVersion){
 
     extract.on('finish', () => {
         resolve(outputPath);
-        event.sender.send('install-runtime-complete', outputPath);
+        // event.sender.send('install-runtime-complete', outputPath);
     });
 
     extract.on('error', (err) => {
