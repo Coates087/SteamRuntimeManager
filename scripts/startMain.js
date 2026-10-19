@@ -77,7 +77,14 @@ var $checkBtn = $("#checkBtn");
 var $loadRunTimeFileBtn = $("#loadRunTimeFileBtn");
 var $installRunTimeFileBtn = $("#installRunTimeFileBtn");
 
-var $openRunTimeFileBtn = $("#openRunTimeFileBtn")
+var $openRunTimeFileBtn = $("#openRunTimeFileBtn");
+var $exitBtn = $("#exitBtn")
+
+var $loaderDiv = $("#loaderDiv");
+
+var $specialModal = $("#specialModal");
+
+var $specialModalText = $("#specialModalText")
 
 function disableInputs(){
   console.log("Disabling Buttons");
@@ -86,7 +93,9 @@ function disableInputs(){
   $loadRunTimeFileBtn.prop("disabled",true);
   $installRunTimeFileBtn.prop("disabled",true);
   $openRunTimeFileBtn.prop("disabled",true);
+  $exitBtn.prop("disabled",true);
 }
+
 function enableInputs(){
   console.log("Enabling Buttons");
   $downloadBtn.prop("disabled",false);
@@ -94,8 +103,32 @@ function enableInputs(){
   $loadRunTimeFileBtn.prop("disabled",false);
   $installRunTimeFileBtn.prop("disabled",false);
   $openRunTimeFileBtn.prop("disabled",false);
+  $exitBtn.prop("disabled",false);
 }
 
+function hideLoadingWheel(){
+  $loaderDiv.addClass("invisible-el");
+}
+
+function showLoadingWheel(){
+  $loaderDiv.removeClass("invisible-el");
+}
+
+function openModal(){
+  $specialModal.addClass("modal-open");
+  $specialModal.removeClass("modal-close");
+}
+
+function closeModal(){
+  $specialModal.addClass("modal-close");
+  $specialModal.removeClass("modal-open");
+}
+
+let modalSpan = document.getElementById("modal-close");
+
+modalSpan.addEventListener('click', () => {
+  closeModal();
+});
 
 let downloadBtn = document.getElementById('downloadBtn');
 
@@ -139,6 +172,14 @@ loadRunTimeFileBtn.addEventListener('click', async () => {
   enableInputs();
 });
 
+
+let exitBtn = document.getElementById("exitBtn");
+
+exitBtn.addEventListener('click', (e) => {
+  e.preventDefault()
+  window.electronAPI.onCloseApp();
+});
+
 function resetProgressBar() {
   divFileProgressBar.val(0);
 }
@@ -149,7 +190,10 @@ function openSelectedFile() {
     //tarFilePath
     var errMessgae = "No file loaded.\nUse the Load Runtime File button to prep the runtime installation."
 
-    alert(errMessgae);
+    //alert(errMessgae);
+
+    $specialModalText.html(errMessgae);
+    openModal();
   }
   else{
     window.electronAPI.messageSaveDial(tarFilePath, true);
@@ -163,12 +207,20 @@ async function installSteamRuntime(){
     //tarFilePath
     var errMessgae = "No file loaded.\nUse the Load Runtime File button to prep the runtime installation."
 
-    alert(errMessgae);
+    //alert(errMessgae);
+    
+    $specialModalText.html(errMessgae);
+    openModal();
+
   }
   else{
     console.log("Input Path: " + tarFilePath);
 
     disableInputs();
+    // since we can't count the number of files in the compressed tar file, we have to go with a loading wheel to let the user know that...
+    //...the files are being extracted
+    showLoadingWheel(); 
+
     setTimeout( async()=>{
       await window.electronAPI.installRuntime(tarFilePath, localMajorVersion);
     },125)
@@ -179,7 +231,13 @@ window.electronAPI.onInstallComplete(async (strFileText) => {
 
   console.log("Install Complete:");
   console.log(strFileText);
+  hideLoadingWheel();
   enableInputs();
+
+  var successMessage = "Steam Runtime files installed successfully."
+  $specialModalText.html(successMessage);
+  openModal();
+  
 })
 
 async function downloadSteamRun(){
@@ -209,8 +267,6 @@ async function getUmuPath(){
   var umuPath = `${homePath}/.local/share/umu/`;
   return umuPath;
 }
-
-
 
 window.electronAPI.onCheckComplete(async (dataResult) => {
   enableInputs();

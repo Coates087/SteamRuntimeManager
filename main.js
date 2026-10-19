@@ -76,7 +76,7 @@ ipcMain.handle('save-file-dial', async (event, strFilePath)=>{
     title: "Save Steam Runtime file",
     defaultPath: finalDefaultPath,
     filters: [
-      { name: 'Tar file | (*.xz)', extensions: ['xz'] },
+      { name: 'Tar file | (*.tar.xz)', extensions: ['xz'] },
     ]
   };
 
@@ -111,7 +111,7 @@ ipcMain.handle('message-save-dial', async (event, filePath, openFile = false) =>
   };
 
   var result = -1; 
-  
+
   if (openFile === false){
     result = dialog.showMessageBoxSync(dialogOptions);
   }
@@ -191,7 +191,7 @@ ipcMain.handle('dial-load-file', async (event) => {
     title: "Open Steam Runtime file",
     defaultPath: downloadsPath,
     filters: [
-      { name: 'Tar file | (*.xz)', extensions: ['xz'] },
+      { name: 'Tar file | (*.tar.xz)', extensions: ['xz'] },
     ],
     properties: ['openFile']
   };
@@ -404,6 +404,7 @@ async function unzipTarFile(event, strTarFile, strVersion){
       
       // Construct the proper file path for the extracted item
       const targetFilePath = path.join(outputPath, header.name);
+      // console.log(`unpacking file: ${header.name}`);
 
       // If the entry is a directory, create it and complete the callback
       if (header.type === 'directory') {
@@ -423,9 +424,13 @@ async function unzipTarFile(event, strTarFile, strVersion){
       var fileBytesWritten = 0;
       stream.on('data', (chunk)=>{
         downloadedBytes += chunk.length;
+        //console.log(`Unzipping chunk progress: ${downloadedBytes.toString()}`);
+
         if (totalBytes > 0) {
             const progress = (fileBytesWritten / totalBytes) * 100;
-            event.sender.send('download-progress', { progress, fileBytesWritten, totalBytes });
+            // console.log(`Unzipping progress: ${progress.toString()}`);
+
+            // event.sender.send('download-progress', { progress, fileBytesWritten, totalBytes });
         }
         // const progress = (downloadedBytes / totalBytes) * 100;
         // event.sender.send('download-progress', { progress, downloadedBytes, totalBytes }); // I'll need to update this action's name
@@ -648,6 +653,10 @@ app.whenReady().then(() => {
 
 app.on('window-all-closed', () => {
     // darwin is MacOS, so we don't want to quit the app when all windows are closed on MacOS
-  if (process.platform !== 'darwin') app.quit()
+  if (process.platform !== 'darwin') app.quit();
 });
+
+ipcMain.on('app-close', () => {
+  app.quit()
+})
 

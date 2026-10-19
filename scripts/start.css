@@ -38,6 +38,11 @@ button:hover {
 .versionText2{
    display: block;
 }
+.exit-button {
+   width: 400px;
+   height: 50px;
+   font-size: larger;
+}
 
 .psuedo-label{
    font-weight: bold;
@@ -58,4 +63,72 @@ button:hover {
 button {
     width: 150px;
     height: 24px;
+}
+.loader {
+   border: 28px solid #f3f3f3;
+   border-radius: 50%;
+   border-top: 28px solid #3498db;
+   width: 180px;
+   height: 180px;
+   -webkit-animation: spin 2s linear infinite; /* Safari */
+   animation: spin 2s linear infinite;
+   z-index: 30;
+}
+
+.loader-box {
+   position: absolute;
+   top: 40%;
+   left: 40%;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+
+/* The Modal (background) */
+.modal {
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  padding-top: 100px; /* Location of the box */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+.modal-open {
+   display: block;
+}
+
+.modal-close {
+   display: none; /* Hidden by default */
+}
+
+/* Modal Content */
+.modal-content {
+  background-color: #fefefe;
+  margin: auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
+}
+
+/* The Close Button */
+.close {
+  color: #aaaaaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: #000;
+  text-decoration: none;
+  cursor: pointer;
 }
