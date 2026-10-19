@@ -1,6 +1,6 @@
 // https://www.electronjs.org/docs/latest/tutorial/tutorial-first-app
 
-const { app, BrowserWindow, ipcMain, ipcRenderer, dialog, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, ipcRenderer, dialog, shell, Menu } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const tar = require('tar-stream');
@@ -47,6 +47,7 @@ const createWindow = () => {
     height: 720,
     minWidth: 880,
     minHeight: 440,
+    icon: path.join(__dirname, 'assets/icon.png'), // Path to your PNG file
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       sandbox: false,
@@ -54,6 +55,9 @@ const createWindow = () => {
       nodeIntegration: false
     }
   })
+  
+  // removes the menu bar
+  Menu.setApplicationMenu(null);
 
   win.loadFile('index.html');
 }

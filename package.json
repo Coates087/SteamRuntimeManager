@@ -4,9 +4,12 @@
   "description": "A simple Electron app for downloading and installing Steam runtime files on Linux",
   "main": "main.js",
   "scripts": {
-    "start": "electron .",
+    "start-app": "electron .",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "licenses:generate": "node license-checker-dev.js"
+    "licenses:generate": "node license-checker-dev.js",
+    "start": "electron-forge start",
+    "package": "electron-forge package",
+    "make": "electron-forge make"
   },
   "author": "Coates0087",
   "publisher": "Coates0087",

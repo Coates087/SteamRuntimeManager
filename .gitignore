@@ -1,3 +1,4 @@
 .temp/
 .files_to_create/
 node_modules/
+out/
