@@ -359,6 +359,7 @@ window.electronAPI.onCheckComplete(async (dataResults) => {
 });
 
 function populateRuntimeDropdown(runtimeResults, defaultVal = ''){
+  $cboMajoSRTOptions = $("#cboMajoSRT option");
   $cboMajoSRTOptions.remove(); 
   // $cboMajoSRT.
 

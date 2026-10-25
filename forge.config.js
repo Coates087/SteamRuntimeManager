@@ -8,7 +8,8 @@ module.exports = {
       /\.env$/,                       // Exclude environment variables file
       /\/node_modules\/.*\/test\//,    // Exclude test directories inside node_modules
       /^\/\.files_to_create/,
-      /^\/\.temp/
+      /^\/\.temp/,
+      /\/github_assets/
     ],
     executableName: 'Steam-Runtime-Manager.appImage',
     icon: './assets/icon.png',
