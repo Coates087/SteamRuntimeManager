@@ -2,7 +2,7 @@ This project is for downloading, archiving and installing the Steam Runtimes on 
 
 To better understand why I made this program, I recommend checking out this video from YouTuber "Zac of All Tech":
 
-[![Which Distro Is Best For Gaming Without Internet?](./github_assets/Offline_Gaming_Distr-ZackOfAllTech)](https://www.youtube.com/watch?v=8eLNA2-8fs0)
+[![Which Distro Is Best For Gaming Without Internet?](./github_assets/Offline_Gaming_Distr-ZackOfAllTech.jpg)](https://www.youtube.com/watch?v=8eLNA2-8fs0)
 
 https://www.youtube.com/watch?v=8eLNA2-8fs0
 
