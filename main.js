@@ -62,6 +62,12 @@ const createWindow = () => {
   win.loadFile('index.html');
 }
 
+ipcMain.handle('load-json', async (event, fileName) => {
+  const filePath = path.join(__dirname, fileName);
+  const rawData = fs.readFileSync(filePath, 'utf8');
+  return JSON.parse(rawData);
+});
+
 ipcMain.handle('save-file-dial', async (event, strFilePath)=>{
   // https://www.electronjs.org/docs/latest/api/dialog
 

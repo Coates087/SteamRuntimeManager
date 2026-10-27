@@ -17,6 +17,7 @@
   "devDependencies": {
     "@electron-forge/cli": "^8.0.1",
     "electron": "^44.4.5",
+    "electron-forge-maker-appimage": "^26.18.0",
     "license-checker": "^25.0.1"
   },
   "dependencies": {

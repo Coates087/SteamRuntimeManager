@@ -14,6 +14,10 @@ var tarFilePath = "";
 
 var allRuntimeVersions = [];
 
+var jsonLang = undefined;
+
+var jsonString = ""; JSON.stringify(jsonLang);
+
 ( async () => {
   // let content = document.getElementById('content').innerText;
 
@@ -22,8 +26,8 @@ var allRuntimeVersions = [];
   // window.ipcRender.receive('editor:getContent', () => { saveContent(content); });
 
   var myContent = `
-      <p>Welcome to the Steam Runtime Manager!</p>
-      <p>This app allows you to download and manage Steam runtimes for your games on Linux.</p>
+      <p id="welcome">Welcome to the Steam Runtime Manager!</p>
+      <p id="welcomeDetails">This app allows you to download and manage Steam runtimes for your games on Linux.</p>
       <div class="vert-spacer">
         <button id="checkBtn">Check Latest Runtime</button>
         <button id="downloadBtn">Download Runtime</button>
@@ -34,9 +38,14 @@ var allRuntimeVersions = [];
       </div>
       `;
 
-  divMain.html(myContent)
-  //divMain2.innerHTML = myContent;
-  console.log(divMain);
+  // divMain.html(myContent);
+
+  // this will be used for loading the multiple languages later
+  jsonLang = await window.electronAPI.loadJson('languages.json');
+
+  jsonString = JSON.stringify(jsonLang);
+  // divMain.html(jsonString);
+  console.log(jsonString);
 
   //await checkSteamRun();
 })();

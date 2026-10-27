@@ -1,23 +1,42 @@
+const path = require('path');
+const { MakerAppImage } = require('electron-forge-maker-appimage');
+
 module.exports = {
   packagerConfig: {
-    // Exclude specific files, folders, or extensions using regex patterns
     ignore: [
-      /^\/\.vscode/,                  // Exclude VS Code folder
-      /^\/src/,                       // Exclude raw source code if using a build step
-      /\.git/,                        // Exclude Git files
-      /\.env$/,                       // Exclude environment variables file
-      /\/node_modules\/.*\/test\//,    // Exclude test directories inside node_modules
+      /^\/\.vscode/,                  
+      /^\/src/,                       
+      /\.git/,                        
+      /\.env$/,                       
+      /\/node_modules\/.*\/test\//,    
       /^\/\.files_to_create/,
       /^\/\.temp/,
       /\/github_assets/
     ],
-    executableName: 'Steam-Runtime-Manager.appImage',
+    executableName: 'Steam-Runtime-Manager', // Removed .appImage extension
     icon: './assets/icon.png',
-    
-    // Changes the directory path where Electron Forge places the packaged builds
+    files: [
+      "package.json",
+      "main.js",
+      "scripts/startMain.js",
+      "scripts/start.css",
+      "preload.js",
+      "index.html",
+      "assets/*",
+      "src/**/*",
+      "languages.json"
+    ],
+    asar: true, 
     out: './out-builds/',
   },
   makers: [
-    // ... your makers configuration
+    new MakerAppImage({
+      //artifactName: '${name}.${ext}',
+      artifactName: 'Steam-Runtime-Manager.${ext}',
+      
+      
+      // Desktop entry categories for Linux application menus
+      category: 'Utility',
+     })
   ]
 };

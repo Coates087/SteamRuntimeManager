@@ -1,0 +1,94 @@
+{
+    "title": {
+        "english" : "Steam Runtime Managaer",
+        "spanish" : "Steam Runtime Managaer",
+        "polish" : "Steam Runtime Managaer"
+    },
+    "connectionMessage": {
+        "english" : "Connection Unavailable",
+        "spanish" : "Connection Unavailable",
+        "polish" : "Connection Unavailable"
+    },
+    "messageContainers": {
+        "english" : "Update Available",
+        "spanish" : "Update Available",
+        "polish" : "Update Available"
+    },
+    "versionMessageLabel": {
+        "english" : "V. available: ",
+        "spanish" : "V. available: ",
+        "polish" : "V. available: "
+    },
+    "welcome": {
+        "english" : "Welcome to the Steam Runtime Manager!",
+        "spanish" : "Welcome to the Steam Runtime Manager!",
+        "polish" : "Welcome to the Steam Runtime Manager!"
+    },
+    "welcomeDetails": {
+        "english" : "This app allows you to download and manage Steam runtimes for your games on Linux.",
+        "spanish" : "This app allows you to download and manage Steam runtimes for your games on Linux.",
+        "polish" : "This app allows you to download and manage Steam runtimes for your games on Linux."
+    },
+
+    "checkBtn": {
+        "english" : "Check Latest Runtime",
+        "spanish" : "Check Latest Runtime",
+        "polish" : "Check Latest Runtime"
+    },
+    "downloadBtn": {
+        "english" : "Download Runtime",
+        "spanish" : "Download Runtime",
+        "polish" : "Download Runtime"
+    },
+    "loadRunTimeFileBtn": {
+        "english" : "Load Runtime File",
+        "spanish" : "Load Runtime File",
+        "polish" : "Load Runtime File"
+    },
+    "installRunTimeFileBtn": {
+        "english" : "Install Runtime File",
+        "spanish" : "Install Runtime File",
+        "polish" : "Install Runtime File"
+    },
+    "fileSelectedMessage": {
+        "english" : "Runtime Selected:",
+        "spanish" : "Runtime Selected:",
+        "polish" : "Runtime Selected:"
+    },
+    "fileLoadedMessage": {
+        "english" : "File Loaded:",
+        "spanish" : "File Loaded:",
+        "polish" : "File Loaded:"
+    },
+    "fileVersionLabel": {
+        "english" : "SRuntime Version: ",
+        "spanish" : "Runtime Version: ",
+        "polish" : "Runtime Version: "
+    },
+    "openRunTimeFileBtn": {
+        "english" : "Open Runtime File Directory",
+        "spanish" : "Open Runtime File Directory",
+        "polish" : "Open Runtime File Directory"
+    },
+    "statusMessage1": {
+        "english" : "Downloading file: ",
+        "spanish" : "Downloading file: ",
+        "polish" : "Downloading file: "
+    },
+    "statusMessage2": {
+        "english" : "Downloading finished: ",
+        "spanish" : "Downloading finished: ",
+        "polish" : "Downloading finished: "
+    },
+    "exitBtn": {
+        "english" : "Exit",
+        "spanish" : "Exit",
+        "polish" : "Exit"
+    },
+    "closeModalBtn": {
+        "english" : "Okay",
+        "spanish" : "Okay",
+        "polish" : "Okay"
+    }
+    
+}

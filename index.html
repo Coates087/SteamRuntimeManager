@@ -11,23 +11,32 @@
       http-equiv="X-Content-Security-Policy"
       content="default-src 'self'; script-src 'self'"
     />
-    <title>Steam Runtime Managaer</title>
+    <title id="title">Steam Runtime Managaer</title>
   </head>
   <body>
     <div id="connectionMessage" class="versionText connection-text invisible-el">Connection Unavailable</div>
     <div id="messageContainers" class="versionCon">
       <div id="updateVersionMessage" class="versionText">Update Available</div>
-      <div  class="versionText versionText2">
+      <div class="versionText versionText2">
         <span id="versionMessageLabel">V. available: </span><span id="versionMessage"></span>
       </div>
     </div>
-    <h1>Steam Runtime Manager</h1>
+    <h1 id="title2">Steam Runtime Manager</h1>
     <div id="divBody" class="main-body">
       <div id="mainContainer" class="main-side">
 
      
         <div id="mainWin">
-
+          <p id="welcome">Welcome to the Steam Runtime Manager!</p>
+          <p id="welcomeDetails">This app allows you to download and manage Steam runtimes for your games on Linux.</p>
+          <div class="vert-spacer">
+            <button id="checkBtn">Check Latest Runtime</button>
+            <button id="downloadBtn">Download Runtime</button>
+          </div>
+          <div class="vert-spacer">
+            <button id="loadRunTimeFileBtn">Load Runtime File</button>
+            <button id="installRunTimeFileBtn">Install Runtime File</button>
+          </div>
         </div>
         <progress id="fileProgressBar" value="0" max="100" class="dlBar"></progress>
       </div>
