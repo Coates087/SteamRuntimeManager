@@ -11,55 +11,55 @@
       http-equiv="X-Content-Security-Policy"
       content="default-src 'self'; script-src 'self'"
     />
-    <title id="title">Steam Runtime Managaer</title>
+    <title id="title"></title>
   </head>
   <body>
-    <div id="connectionMessage" class="versionText connection-text invisible-el">Connection Unavailable</div>
+    <div id="connectionMessage" class="versionText connection-text invisible-el"></div>
     <div id="messageContainers" class="versionCon">
-      <div id="updateVersionMessage" class="versionText">Update Available</div>
+      <div id="updateVersionMessage" class="versionText"></div>
       <div class="versionText versionText2">
-        <span id="versionMessageLabel">V. available: </span><span id="versionMessage"></span>
+        <span id="versionMessageLabel"></span><span id="versionMessage"></span>
       </div>
     </div>
-    <h1 id="title2">Steam Runtime Manager</h1>
+    <h1 id="title2"></h1>
     <div id="divBody" class="main-body">
       <div id="mainContainer" class="main-side">
 
      
         <div id="mainWin">
-          <p id="welcome">Welcome to the Steam Runtime Manager!</p>
-          <p id="welcomeDetails">This app allows you to download and manage Steam runtimes for your games on Linux.</p>
+          <p id="welcome"></p>
+          <p id="welcomeDetails"></p>
           <div class="vert-spacer">
-            <button id="checkBtn">Check Latest Runtime</button>
-            <button id="downloadBtn">Download Runtime</button>
+            <button id="checkBtn"></button>
+            <button id="downloadBtn"></button>
           </div>
           <div class="vert-spacer">
-            <button id="loadRunTimeFileBtn">Load Runtime File</button>
-            <button id="installRunTimeFileBtn">Install Runtime File</button>
+            <button id="loadRunTimeFileBtn"></button>
+            <button id="installRunTimeFileBtn"></button>
           </div>
         </div>
         <progress id="fileProgressBar" value="0" max="100" class="dlBar"></progress>
       </div>
       <div id="fileSelectedContent" class="main-side">
         <div>
-          <span id="fileSelectedMessage" class="psuedo-label">Runtime Selected:</span>
+          <span id="fileSelectedMessage" class="psuedo-label"></span>
           <select id="cboMajoSRT">
             <option value="1">Option</option>
           </select>
         </div>
-        <span id="fileLoadedMessage" class="psuedo-label">File Loaded:</span>
+        <span id="fileLoadedMessage" class="psuedo-label"></span>
         <span id="fileSelected" class="versionText2"></span>
         <span id="filePath" class="versionText2"></span>
         <div id="fileVersionDiv" class="versionText2 invisible-el">
-          <span id="fileVersionLabel">Runtime Version: </span><span id="fileVersion" ></span>
-          <button id="openRunTimeFileBtn" class="versionText2">Open Runtime File Dir</button>
+          <span id="fileVersionLabel"></span><span id="fileVersion" ></span>
+          <button id="openRunTimeFileBtn" class="versionText2"></button>
         </div>
       </div>
       
     </div>
     <div id="statusMessage"></div>
 
-    <button id="exitBtn" class="versionText2 exit-button">Exit</button>
+    <button id="exitBtn" class="versionText2 exit-button"></button>
 
     <div id="loaderDiv" class="loader loader-box invisible-el"></div>
 
@@ -67,10 +67,10 @@
       <!-- Modal content -->
       <div class="modal-content">
         <span id="modal-banner" class="modalBanner">
-          <span id="modal-title" class="modalBanner-title">Message</span><span id="modal-close" class="close">&times;</span>
+          <span id="modal-title" class="modalBanner-title"></span><span id="modal-close" class="close">&times;</span>
         </span>
         <p id="specialModalText" class="modal-content-text"></p>
-        <button id="closeModalBtn" class="versionText2 modal-close-button">Okay</button>
+        <button id="closeModalBtn" class="versionText2 modal-close-button"></button>
       </div>
     </div>
   </body>

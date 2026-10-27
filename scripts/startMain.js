@@ -16,7 +16,7 @@ var allRuntimeVersions = [];
 
 var jsonLang = undefined;
 
-var jsonString = ""; JSON.stringify(jsonLang);
+var jsonString = ""; //JSON.stringify(jsonLang);
 
 ( async () => {
   // let content = document.getElementById('content').innerText;
@@ -40,43 +40,16 @@ var jsonString = ""; JSON.stringify(jsonLang);
 
   // divMain.html(myContent);
 
-  // this will be used for loading the multiple languages later
-  jsonLang = await window.electronAPI.loadJson('languages.json');
-
-  jsonString = JSON.stringify(jsonLang);
-  // divMain.html(jsonString);
-  console.log(jsonString);
 
   //await checkSteamRun();
 })();
 
-$(async function(){
-  var umuStr = await getUmuPath();
-  console.log(umuStr);
-
-  var resultPath = "";
-  resultPath = await searchSRTFolders(umuStr);
-
-  console.log(`UMU Dir: ${resultPath}`);
-
-  // check version installed locally
-  var versionFilePath = `${umuStr}${resultPath}`;
-
-  if (!versionFilePath.endsWith("/")){
-    versionFilePath = versionFilePath + "/";
-  }
-
-  versionFilePath = versionFilePath + "VERSIONS.txt";
-
-  localVersion = '0';
-  //VERSIONS.txt
-  localVersion = await checkVersion(versionFilePath, false)
-
-  checkSteamRun();
-});
-
 const strSteamRun = "steamrt";
 const numDefaultCurrentSteamRunVersion = 4;
+
+var langVal = "english"; // default language
+
+
 
 var newestSteamRunTimeURL = "";
 
@@ -108,6 +81,84 @@ var $modalTitle = $("#modal-title");
 
 var $cboMajoSRT = $("#cboMajoSRT");
 var $cboMajoSRTOptions = $("#cboMajoSRT option");
+
+var $welcome = $("#welcome");
+var $welcomeDetails = $("#welcomeDetails");
+var $fileLoadedMessage = $("#fileLoadedMessage");
+
+var $fileVersionLabel = $("#fileVersionLabel");
+var $closeModalBtn = $("#closeModalBtn");
+
+var $title = $("#title");
+var $title2 = $("#title2");
+var $versionMessageLabel = $("#versionMessageLabel");
+var $modalTitle = $("#modal-title");
+var $fileSelectedMessage = $("#fileSelectedMessage");
+
+$(async function(){
+
+  // this will be used for loading the multiple languages later
+  jsonLang = await window.electronAPI.loadJson('languages.json');
+
+  jsonString = JSON.stringify(jsonLang);
+  // divMain.html(jsonString);
+  console.log(jsonString);
+
+  loadTranslations();
+
+  var umuStr = await getUmuPath();
+  console.log(umuStr);
+
+  var resultPath = "";
+  resultPath = await searchSRTFolders(umuStr);
+
+  console.log(`UMU Dir: ${resultPath}`);
+
+  // check version installed locally
+  var versionFilePath = `${umuStr}${resultPath}`;
+
+  if (!versionFilePath.endsWith("/")){
+    versionFilePath = versionFilePath + "/";
+  }
+
+  versionFilePath = versionFilePath + "VERSIONS.txt";
+
+  localVersion = '0';
+  //VERSIONS.txt
+  localVersion = await checkVersion(versionFilePath, false)
+
+  checkSteamRun();
+});
+
+
+function loadTranslations(){
+  //console.log(jsonLang)
+  $welcome.html(jsonLang["welcome"][langVal]);
+  $welcomeDetails.html(jsonLang["welcomeDetails"][langVal]);
+  $updateVersionMessage.html(jsonLang["messageContainers"][langVal]);
+  $connectionMessage.html(jsonLang["connectionMessage"][langVal]);
+  $fileVersionLabel.html(jsonLang["fileVersionLabel"][langVal]);
+  $fileSelectedMessage.html(jsonLang["fileSelectedMessage"][langVal]);
+
+  $downloadBtn.text(jsonLang["downloadBtn"][langVal]);
+  $checkBtn.text(jsonLang["checkBtn"][langVal]);
+  $loadRunTimeFileBtn.text(jsonLang["loadRunTimeFileBtn"][langVal]);
+  $installRunTimeFileBtn.text(jsonLang["installRunTimeFileBtn"][langVal]);
+
+  $openRunTimeFileBtn.text(jsonLang["openRunTimeFileBtn"][langVal]);
+  $exitBtn.text(jsonLang["exitBtn"][langVal]);
+  $closeModalBtn.text(jsonLang["closeModalBtn"][langVal]);
+
+  $fileVersionLabel.html(jsonLang["fileVersionLabel"][langVal]);
+  $fileLoadedMessage.html(jsonLang["fileLoadedMessage"][langVal]);
+  
+  $title.html(jsonLang["title"][langVal]);
+  $title2.html(jsonLang["title"][langVal]);
+  $versionMessageLabel.html(jsonLang["versionMessageLabel"][langVal]);
+
+  $modalTitle.html(jsonLang["modal-title"][langVal]);
+}
+
 
 function disableInputs(){
   console.log("Disabling Buttons");

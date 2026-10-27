@@ -15,9 +15,9 @@
         "polish" : "Update Available"
     },
     "versionMessageLabel": {
-        "english" : "V. available: ",
-        "spanish" : "V. available: ",
-        "polish" : "V. available: "
+        "english" : "Version available: ",
+        "spanish" : "Version available: ",
+        "polish" : "Version available: "
     },
     "welcome": {
         "english" : "Welcome to the Steam Runtime Manager!",
@@ -49,6 +49,11 @@
         "english" : "Install Runtime File",
         "spanish" : "Install Runtime File",
         "polish" : "Install Runtime File"
+    },
+    "modal-title": {
+        "english" : "Message",
+        "spanish" : "Message",
+        "polish" : "Message"
     },
     "fileSelectedMessage": {
         "english" : "Runtime Selected:",
