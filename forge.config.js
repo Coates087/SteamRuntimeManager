@@ -12,6 +12,7 @@ module.exports = {
       /^\/\.files_to_create/,
       /^\/\.temp/,
       /\/github_assets/,
+      /\/docs/,
       "google841b755725d32332.html"
     ],
     executableName: 'Steam-Runtime-Manager', // Removed .appImage extension
