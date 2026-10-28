@@ -1,5 +1,7 @@
 This project is for downloading, archiving and installing the Steam Runtimes on Linux. You can even install the archived runtimes offline.
 
+![Steam Runtime Manager](./github_assets/Steam_Runtime_Manager_main.png)
+
 To better understand why I made this program, I recommend checking out this video from YouTuber "Zac of All Tech":
 
 [![Which Distro Is Best For Gaming Without Internet?](./github_assets/Offline_Gaming_Distr-ZackOfAllTech.jpg)](https://www.youtube.com/watch?v=8eLNA2-8fs0)
