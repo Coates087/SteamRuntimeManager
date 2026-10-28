@@ -11,7 +11,8 @@ module.exports = {
       /\/node_modules\/.*\/test\//,    
       /^\/\.files_to_create/,
       /^\/\.temp/,
-      /\/github_assets/
+      /\/github_assets/,
+      "google841b755725d32332.html"
     ],
     executableName: 'Steam-Runtime-Manager', // Removed .appImage extension
     icon: './assets/icon.png',
