@@ -1,5 +1,3 @@
-<meta name="google-site-verification" content="Xod8g4OBrtg-WDzwEH9WSNc4_C0GBoEjoYXIJAG9apE" />
-
 This project is for downloading, archiving and installing the Steam Runtimes on Linux. You can even install the archived runtimes offline.
 
 ![Steam Runtime Manager](./github_assets/Steam_Runtime_Manager_main.png)
